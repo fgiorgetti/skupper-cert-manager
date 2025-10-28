@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: skupper-cert-manager
+  namespace: skupper
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: skupper-cert-manager
+rules:
+  - apiGroups:
+      - "skupper.io"
+    resources:
+      - "certificates"
+      - "certificates/status"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "update"
+  - apiGroups:
+      - "cert-manager.io"
+    resources:
+      - "issuers"
+      - "certificates"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: skupper-cert-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: skupper-cert-manager
+subjects:
+  - kind: ServiceAccount
+    name: skupper-cert-manager
+    namespace: skupper
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: skupper-cert-manager
+  namespace: skupper
+rules:
+  - apiGroups:
+      - "skupper.io"
+    resources:
+      - "certificates"
+      - "certificates/status"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "update"
+  - apiGroups:
+      - "cert-manager.io"
+    resources:
+      - "issuers"
+      - "certificates"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: skupper-cert-manager
+  namespace: skupper
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: skupper-cert-manager
+subjects:
+  - kind: ServiceAccount
+    name: skupper-cert-manager
+    namespace: skupper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: skupper-cert-manager
+  name: skupper-cert-manager
+  namespace: skupper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skupper-cert-manager
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: skupper-cert-manager
+    spec:
+      containers:
+      - image: quay.io/fgiorgetti/skupper-cert-manager
+        name: skupper-cert-manager
+      serviceAccount: skupper-cert-manager
